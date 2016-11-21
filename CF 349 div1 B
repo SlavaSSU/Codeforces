@@ -1,0 +1,199 @@
+/*
+problem link = "http://codeforces.com/contest/666/problem/B"
+*/
+
+#define _CRT_SECURE_NO_WARNINGS
+
+#pragma comment(linker, "/STACK:640000000")
+
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <iomanip>
+#include <cstdio>
+#include <cstdlib>
+#include <algorithm>
+#include <queue>
+#include <stack>
+#include <set>
+#include <map>
+#include <list>
+#include <vector>
+#include <string>
+#include <cstring>
+#include <cmath>
+#include <ctime>
+#include <cassert>
+#include <bitset>
+#include <unordered_set>
+#include <unordered_map>
+
+using namespace std;
+
+#define forn(i, n) for(int i = 0; i < (int)(n); i++)
+#define forn1(i, n) for(int i = 1; i <= (int)(n); i++)
+#define forr(i, l, r) for(int i = int(l); i <= int(r); i++)
+#define all(a) (a).begin(), (a).end()
+#define sz(a) (int)((a).size())
+#define mp make_pair
+#define pb push_back
+#define x first
+#define y second
+#define y1 __y1
+#define sqr(x) ((x) * (x))
+
+typedef long long li;
+typedef long double ld;
+typedef unsigned int uint;
+typedef unsigned long long uli;
+typedef pair<int, int> pt;
+
+inline void read(int&);
+inline void read(li&);
+inline void read(ld&);
+inline void read(char&);
+inline void read(string&);
+template <typename T1, typename T2> inline void read(T1&, T2&);
+template <typename T1, typename T2, typename T3> inline void read(T1&, T2&, T3&);
+template <typename T1, typename T2, typename T3, typename T4> inline void read(T1&, T2&, T3&, T4&);
+
+inline void read(string &s) {
+	static char buf[int(1e6) + 10];
+	assert(scanf("%s", buf) == 1);
+	s = string(buf);
+	return;
+}
+
+const int INF = (int)(1e9);
+const li INF64 = (li)(INF)* (li)(INF);
+const ld eps = 1e-9;
+const ld pi = ld(3.1415926535897932384626433832795);
+
+inline bool in(int i, int j, int n, int m) {
+	return i >= 1 && i <= n && j >= 1 && j <= m;
+}
+
+inline int myrand() {
+	return (rand() ^ (rand() << 15));
+}
+
+inline li randL() {
+	return myrand() * 1LL * myrand() + myrand();
+}
+
+const int dx[] = { 0, -1, 1, 0 };
+const int dy[] = { -1, 0, 0, 1 };
+
+const int N = 3333;
+
+vector<int> g[N];
+int n, m;
+
+inline void gen() {
+	return;
+}
+
+inline bool read() {
+	if (!(cin >> n >> m)) return false;
+	forn(i, m) {
+		int u, v;
+		assert(cin >> u >> v);
+		u--, v--;
+		g[u].push_back(v);
+		//g[v].push_back(u);
+	}
+	return true;
+}
+
+bool used[N];
+
+void bfs(int * d, int s) {
+	queue<int> q;
+	forn(i, N) used[i] = false;
+	forn(i, N) d[i] = INF;
+	used[s] = true;
+	d[s] = 0;
+	q.push(s);
+
+	while (!q.empty()) {
+		int v = q.front();
+		q.pop();
+		forn(i, sz(g[v])) {
+			int to = g[v][i];
+			if (!used[to]) {
+				used[to] = true;
+				q.push(to);
+				d[to] = d[v] + 1;
+			}
+		}
+	}
+}
+
+int d[N][N];
+vector<pt> longestIn[N], longestTo[N];
+
+inline void solve() {
+	forn(i, n) bfs(d[i], i);
+	int mx = 0;
+	vector<int> ans;
+	for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) {
+		if (d[i][j] != INF) {
+			longestIn[j].push_back(mp(d[i][j], i));
+			longestTo[i].push_back(mp(d[i][j], j));
+		}
+	}
+
+	forn(i, n) {
+		sort(all(longestIn[i]));
+		sort(all(longestTo[i]));
+		reverse(all(longestIn[i]));
+		reverse(all(longestTo[i]));
+	}
+
+	for (int i2 = 0; i2 < n; i2++) for (int i3 = 0; i3 < n; i3++) {
+		if (i2 == i3) continue;
+		if (d[i2][i3] > INF / 2) continue;
+		const vector<pt>& start = longestIn[i2];
+		const vector<pt>& finish = longestTo[i3];
+		forn(i, min(5, sz(start))) forn(j, min(5, sz(finish))) {
+			int i1 = start[i].y, i4 = finish[j].y;
+			if (i1 == i2 || i1 == i3 || i1 == i4) continue;
+			if (i4 == i2 || i4 == i3) continue;
+			int cur = d[i2][i3] + start[i].x + finish[j].x;
+			if (cur > mx) {
+				mx = cur;
+				ans = { i1, i2, i3, i4 };
+			}
+		}
+	}
+
+	assert(sz(ans) == 4);
+	forn(i, sz(ans)) ans[i]++;
+	forn(i, sz(ans)) cout << ans[i] << ' '; cout << endl;
+	return;
+}
+
+int main() {
+#ifdef _DEBUG
+	assert(freopen("input.txt", "rt", stdin));
+	assert(freopen("output.txt", "wt", stdout));
+#endif
+
+	cout << setprecision(10) << fixed;
+	cerr << setprecision(10) << fixed;
+
+	srand(int(time(NULL)));
+
+	int T = 1;
+
+	forn(i, T) {
+		//cerr << "TEST == " << i + 1 << endl;
+		assert(read());
+		solve();
+	}
+
+#ifdef _DEBUG
+	cerr << "TIME == " << clock() << " ms" << endl;
+#endif
+	return 0;
+}
