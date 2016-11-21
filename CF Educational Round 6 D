@@ -1,0 +1,173 @@
+/*
+problem link = "http://codeforces.com/contest/620/problem/D"
+*/
+
+#define _CRT_SECURE_NO_WARNINGS
+
+#pragma comment(linker, "/STACK:640000000")
+
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <iomanip>
+#include <cstdio>
+#include <cstdlib>
+#include <algorithm>
+#include <queue>
+#include <stack>
+#include <set>
+#include <map>
+#include <list>
+#include <vector>
+#include <string>
+#include <cstring>
+#include <cmath>
+#include <ctime>
+#include <cassert>
+#include <bitset>
+
+using namespace std;
+
+#define forn(i, n) for(int i = 0; i < (int)(n); i++)
+#define forn1(i, n) for(int i = 1; i <= (int)(n); i++)
+#define forr(i, l, r) for(int i = int(l); i <= int(r); i++)
+#define all(a) (a).begin(), (a).end()
+#define sz(a) (int)((a).size())
+#define mp make_pair
+#define pb push_back
+#define x first
+#define y second
+#define y1 __y1
+#define sqr(x) ((x) * (x))
+
+typedef long long li;
+typedef long double ld;
+typedef pair<int, int> pt;
+
+inline void read(int&);
+inline void read(li&);
+inline void read(ld&);
+inline void read(char&);
+inline void read(string&);
+template <typename T1, typename T2> inline void read(T1&, T2&);
+template <typename T1, typename T2, typename T3> inline void read(T1&, T2&, T3&);
+template <typename T1, typename T2, typename T3, typename T4> inline void read(T1&, T2&, T3&, T4&);
+
+const int INF = (int)(1e9);
+const li INF64 = (li)(INF)* (li)(INF);
+const ld eps = 1e-9;
+const ld pi = ld(3.1415926535897932384626433832795);
+
+inline bool in(int i, int j, int n, int m) {
+    return i >= 1 && i <= n && j >= 1 && j <= m;
+}
+
+inline int myrand() {
+    return (rand() ^ (rand() << 15));
+}
+
+inline li randL() {
+    return myrand() * 1LL * myrand() + myrand();
+}
+
+const int dx[] = { 0, -1, 1, 0 };
+const int dy[] = { -1, 0, 0, 1 };
+
+const int N = 2222;
+
+int n, m;
+li a[N], b[N];
+
+inline void gen() {
+    return;
+}
+
+inline bool read() {
+	if(!(cin >> n)) return false;
+	forn1(i, n) assert(cin >> a[i]);
+	assert(cin >> m);
+	forn1(i, m) assert(cin >> b[i]);
+    return true;
+}
+
+inline li mabs(const li &x) {
+	if(x >= 0) return x;
+	return -x;
+}
+
+inline void solve() {
+	li ans;
+	vector<pt> res;
+	li sumA = 0, sumB = 0;
+	forn1(i, n) sumA += a[i];
+	forn1(i, m) sumB += b[i];
+	ans = mabs(sumA - sumB);
+	res.clear();
+
+	forn1(i, n) forn1(j, m) {
+		li curA = sumA - a[i] + b[j];
+		li curB = sumB - b[j] + a[i];
+		li cur = mabs(curA - curB);
+		if(cur < ans) {
+			ans = cur;
+			res = vector<pt>(1, mp(i, j));
+		}
+	}
+
+	set<pair<li, pt> > sums;
+	forn1(i, m) for(int j = i + 1; j <= m; j++) sums.insert(mp(b[i] + b[j], mp(i, j)));
+
+	li dif = sumA - sumB;
+
+	forn1(i, n) for(int j = i + 1; j <= n; j++) {
+		li curS = dif - 2 * (a[i] + a[j]);
+		//cerr << "i j curS == " << i << ' ' << j << ' ' << curS << endl;
+		set<pair<li, pt> >::iterator it = sums.lower_bound(mp(-curS / 2, mp(-1, -1)));
+		set<pair<li, pt> >::iterator it1 = it;
+		int cnt = 0;
+		while(cnt < 3 && it1 != sums.begin()) it1--, cnt++;
+		cnt = 0;
+		for(set<pair<li, pt> >::iterator iter = it1; iter != sums.end() && cnt < 6; iter++, cnt++) {
+			pair<li, pt> val = *iter;
+			li cur = curS + 2 * val.x;
+			if(mabs(cur) < ans) {
+				ans = mabs(cur);
+				res.clear();
+				res.pb(mp(i, val.y.x));
+				res.pb(mp(j, val.y.y));
+			}
+		}
+	}
+
+	cout << ans << endl;
+	cout << sz(res) << endl;
+	forn(i, sz(res)) cout << res[i].x << ' ' << res[i].y << endl;
+    return;
+}
+
+int main() {
+#ifdef _DEBUG
+    assert(freopen("input.txt", "rt", stdin));
+    assert(freopen("output.txt", "wt", stdout));
+#endif
+
+    cout << setprecision(10) << fixed;
+    cerr << setprecision(10) << fixed;
+
+    srand(int(time(NULL)));
+
+    int T = 1;
+    //assert(scanf("%d", &T) == 1);
+
+    forn(i, T) {
+        //cerr << "TEST == " << i + 1 << endl;
+        assert(read());
+        solve();
+        //break;
+    }
+
+#ifdef _DEBUG
+    cerr << "TIME == " << clock() << " ms" << endl;
+#endif
+    return 0;
+}
