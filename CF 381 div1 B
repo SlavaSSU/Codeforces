@@ -1,0 +1,249 @@
+/*
+problem link = "http://codeforces.com/contest/739/problem/B"
+*/
+
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <iomanip>
+#include <cstdio>
+
+//#include <cstdint>
+//#include <cstdlib>
+#include <cassert>
+//#include <cctype>
+#include <climits>
+#include <functional>
+#include <numeric>
+#include <algorithm>
+#include <cmath>
+#include <ctime>
+
+#include <string>
+#include <cstring>
+#include <vector>
+#include <set>
+#include <map>
+#include <stack>
+#include <queue>
+#include <list>
+#include <deque>
+#include <unordered_set>
+#include <unordered_map>
+#include <bitset>
+#include <array>
+
+using namespace std;
+
+#define forn(i, n) for(int i = 0; i < int(n); i++)
+#define forn1(i, n) for(int i = 1; i <= int(n); i++)
+#define sz(a) int((a).size())
+#define all(a) (a).begin(), (a).end()
+#define mp make_pair
+#define pb push_back
+#define x first
+#define y second
+
+typedef long long li;
+typedef long double ld;
+typedef pair<int, int> pt;
+
+const int INF = int(1e9);
+const li INF64 = li(1e18);
+const ld PI = acosl(ld(-1));
+const ld EPS = 1e-9;
+
+template <typename T> inline T sqr(const T& x) {
+	return x * x;
+}
+
+template <typename T> inline T abs(const T& x) {
+	return x > 0 ? x : -x;
+}
+
+inline bool inside(int x, int y, int n, int m) {
+	return x >= 0 && x < n && y >= 0 && y < m;
+}
+
+inline int rnd() {
+	return abs(rand() ^ (rand() << 15));
+}
+
+inline int rnd(int n) {
+	assert(n > 0);
+	return rnd() % n;
+}
+
+inline int rnd(int lf, int rg) {
+	return lf + rnd(rg - lf + 1);
+}
+
+inline li rndLL() {
+	return rnd() * 1LL * rnd() + rnd();
+}
+
+const int dx[4] = { -1, 0, +1, 0 };
+const int dy[4] = { 0, +1, 0, -1 };
+
+const int N = int(5e5) + 555;
+
+int n;
+vector<pt> g[N];
+li a[N];
+
+inline void gen() {
+	return;
+}
+
+inline bool read() {
+	if (scanf("%d", &n) != 1) return false;
+	forn(i, n) {
+		int x;
+		assert(scanf("%d", &x) == 1);
+		a[i] = li(x);
+	}
+
+	forn(i, n - 1) {
+		int p, w;
+		assert(scanf("%d %d", &p, &w) == 2);
+		p--;
+		g[i + 1].push_back(pt(p, w));
+		g[p].push_back(pt(i + 1, w));
+	}
+	return true;
+}
+
+li d[N];
+pt pos[N];
+int tt = 0;
+int ord[N];
+
+void dfs(int v, int p, li dd) {
+	d[v] = dd;
+	ord[tt] = v;
+	pos[v].x = tt;
+	tt++;
+	forn(i, sz(g[v])) {
+		int to = g[v][i].x;
+		int w = g[v][i].y;
+		if (to == p) continue;
+		dfs(to, v, dd + w);
+	}
+
+	ord[tt] = v;
+	pos[v].y = tt;
+	tt++;
+}
+
+inline void merge(vector<li>& a, const vector<li>& b, const vector<li>& c) {
+	int i = 0, j = 0, n = sz(b), m = sz(c);
+	a.clear();
+	while (i < n || j < m) {
+		if (i < n && (j >= m || b[i] < c[j])) {
+			a.push_back(b[i]);
+			i++;
+		}
+		else {
+			a.push_back(c[j]);
+			j++;
+		}
+	}
+}
+
+inline int lf(int v) {
+	return (v << 1) + 1;
+}
+
+inline int rg(int v) {
+	return (v << 1) + 2;
+}
+
+vector<li> t[4 * N];
+li vals[N];
+
+void build(int v, int l, int r) {
+	if (l == r) {
+		t[v] = vector<li>(1, vals[l]);
+		return;
+	}
+
+	int mid = (l + r) >> 1;
+
+	build(lf(v), l, mid);
+	build(rg(v), mid + 1, r);
+	merge(t[v], t[lf(v)], t[rg(v)]);
+	return;
+}
+
+inline int get(const vector<li>& a, li need) {
+	return int(upper_bound(all(a), need) - a.begin());
+}
+
+int get(int v, int l, int r, int L, int R, li need) {
+	if (l == L && r == R) {
+		return get(t[v], need);
+	}
+
+	int mid = (l + r) >> 1;
+	int res = 0;
+
+	if (L <= mid) res += get(lf(v), l, mid, L, min(R, mid), need);
+	if (R > mid) res += get(rg(v), mid + 1, r, max(mid + 1, L), R, need);
+	return res;
+}
+
+inline void solve() {
+	dfs(0, -1, 0);
+	int nn = tt;
+	forn(i, nn) {
+		int v = ord[i];
+		vals[i] = d[v] - a[v];
+	}
+
+	build(0, 0, nn - 1);
+
+	forn(i, n) {
+		int lf = pos[i].x, rg = pos[i].y;
+		int ans = 0;
+		if (lf + 1 < rg) ans += get(0, 0, nn - 1, lf + 1, rg - 1, d[i]);
+		assert(ans % 2 == 0);
+		ans /= 2;
+		printf("%d ", ans);
+	}
+
+	puts("");
+	return;
+}
+
+int main() {
+#ifdef _DEBUG
+	assert(freopen("input.txt", "rt", stdin));
+	assert(freopen("output.txt", "wt", stdout));
+#endif
+
+	cout << setprecision(10) << fixed;
+	cerr << setprecision(10) << fixed;
+
+	srand(int(time(NULL)));
+
+	int T = 1;
+	//#define MULTITEST
+#ifdef MULTITEST
+	assert(scanf("%d", &T) == 1);
+#endif
+
+	forn(i, T) {
+#ifdef _DEBUG
+		cerr << "TEST == " << i << endl;
+#endif
+		assert(read());
+		solve();
+	}
+
+#ifdef _DEBUG
+	cerr << "TIME == " << clock() << " ms" << endl;
+#endif
+	return 0;
+}
