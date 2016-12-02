@@ -1,0 +1,200 @@
+/*
+problem link = "http://codeforces.com/contest/737/problem/A"
+*/
+
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <iomanip>
+#include <cstdio>
+
+//#include <cstdint>
+//#include <cstdlib>
+#include <cassert>
+//#include <cctype>
+#include <climits>
+#include <functional>
+#include <numeric>
+#include <algorithm>
+#include <cmath>
+#include <ctime>
+
+#include <string>
+#include <cstring>
+#include <vector>
+#include <set>
+#include <map>
+#include <stack>
+#include <queue>
+
+using namespace std;
+
+#define forn(i, n) for(int i = 0; i < int(n); i++)
+#define forn1(i, n) for(int i = 1; i <= int(n); i++)
+#define sz(a) int((a).size())
+#define all(a) (a).begin(), (a).end()
+#define mp make_pair
+#define pb push_back
+#define x first
+#define y second
+
+typedef long long li;
+typedef double ld;
+typedef pair<int, int> pt;
+
+const int INF = int(1e9);
+const li INF64 = li(1e18);
+const ld PI = acosl(ld(-1));
+const ld EPS = 1e-9;
+
+template <typename T> inline T sqr(const T& x) {
+	return x * x;
+}
+
+template <typename T> inline T abs(const T& x) {
+	return x > 0 ? x : -x;
+}
+
+inline bool inside(int x, int y, int n, int m) {
+	return x >= 0 && x < n && y >= 0 && y < m;
+}
+
+inline int rnd() {
+	return abs(rand() ^ (rand() << 15));
+}
+
+inline int rnd(int n) {
+	assert(n > 0);
+	return rnd() % n;
+}
+
+inline int rnd(int lf, int rg) {
+	return lf + rnd(rg - lf + 1);
+}
+
+inline li rndLL() {
+	return rnd() * 1LL * rnd() + rnd();
+}
+
+const int dx[4] = { -1, 0, +1, 0 };
+const int dy[4] = { 0, +1, 0, -1 };
+
+const int N = int(2e5) + 555;
+
+int n, k, s, t;
+pt a[N];
+int m;
+int b[N];
+
+inline void gen() {
+	return;
+}
+
+inline bool read() {
+	if (scanf("%d %d %d %d", &n, &k, &s, &t) != 4) return false;
+	forn(i, n) {
+		assert(scanf("%d %d", &a[i].x, &a[i].y) == 2);
+	}
+
+	forn(i, k) assert(scanf("%d", &b[i]) == 1);
+	return true;
+}
+
+int mxs[N];
+
+li calcT(int len, int v) {
+	li lf = 0, rg = len;
+	while (rg - lf > 1) {
+		li mid = (lf + rg) / 2;
+		li cost = mid * 2 + (len - mid);
+		if (cost <= v)
+			lf = mid;
+		else
+			rg = mid;
+	}
+
+	for (li mid = rg; mid >= lf; mid--) {
+		li cost = mid * 2 + (len - mid);
+		if (cost <= v) return mid + (len - mid) * 2;
+	}
+
+	assert(false);
+}
+
+bool can(int v) {
+	//cerr << "v == " << v << endl;
+	li res = 0;
+	forn(i, k) {
+		int len = b[i];
+		if (i) len -= b[i - 1];
+		if (len > v) return false;
+		li tt = calcT(len, v);
+		//cerr << "len tt == " << len << ' ' << tt << endl;
+		res += tt;
+	}
+
+	//cerr << "v res == " << v << ' ' << res << endl;
+	return res <= t;
+}
+
+inline void solve() {
+	b[k++] = s;
+	sort(b, b + k);
+	k = int(unique(b, b + k) - b);
+	while (b[k] > s) k--;
+	sort(a, a + n);
+	mxs[0] = a[0].y;
+	for (int i = 1; i < n; i++) mxs[i] = max(mxs[i - 1], a[i].y);
+	int lf = 0, rg = n - 1;
+	while (rg - lf > 1) {
+		int mid = (lf + rg) / 2;
+		if (can(mxs[mid]))
+			rg = mid;
+		else
+			lf = mid;
+	}
+
+	for (int mid = lf; mid <= rg; mid++) {
+		if (can(mxs[mid])) {
+			//cerr << "mxs == " << mxs[mid] << endl;
+			cout << a[mid].x << endl;
+			return;
+		}
+	}
+
+	puts("-1");
+	return;
+}
+
+int main() {
+#ifdef _DEBUG
+	assert(freopen("input.txt", "rt", stdin));
+	assert(freopen("output.txt", "wt", stdout));
+#endif
+
+	cout << setprecision(10) << fixed;
+	cerr << setprecision(10) << fixed;
+
+	srand(int(time(NULL)));
+
+	int T = 1;
+	//#define MULTITEST
+#ifdef MULTITEST
+	assert(scanf("%d", &T) == 1);
+#endif
+
+	forn(i, T) {
+#ifdef _DEBUG
+		cerr << "TEST == " << i << endl;
+#endif
+		assert(read());
+		solve();
+	}
+
+#ifdef _DEBUG
+	cerr << "TIME == " << clock() << " ms" << endl;
+#endif
+	return 0;
+}
